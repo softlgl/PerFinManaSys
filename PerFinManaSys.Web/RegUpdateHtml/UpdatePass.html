@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link href="../Content/css/page/login.css" rel="stylesheet" type="text/css" />
+    <script src="../Scripts/jquery-1.8.2.js"></script>
+    <script src="../Scripts/layer/layer.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+            $('#login').click(function () {
+                var newpass = $('#newpass').val();
+                var surepass = $('#surepass').val();
+                if (newpass == null || newpass.length == 0) {
+                    $('#message').html("密码不能为空");
+                } else if (surepass == null || surepass.length == 0) {
+                    $('#message').html("确认密码不能为空！");
+                } else if (newpass != surepass) {
+                    $('#message').html("两次密码不同！");
+                } else {
+                        $.ajax({
+                            type: "POST",
+                            url: "/UserManage/UpUserPass",
+                            data: { PassWord: surepass },
+                            dataType: "json",
+                            //contentType: "application/json",
+                            success: function (d) {
+                                if (d.flag == 'Success') {
+                                    $('#message').html(d.Message);
+                                    //关闭弹窗
+                                    parent.layer.close(index);
+                                } else {
+                                    $('#message').html(d.Message);
+                                }
+                            },
+                            error: function (e) {
+                                $('#message').html(e.responseText);
+                            },
+                            beforeSend: function () {
+                                $('form').find("input").attr("disabled", true);
+                                $('#message').html("正在处理，请稍候...");
+                            },
+                            complete: function () {
+                                $('form').find("input").attr("disabled", false);
+                            }
+                        });//ajax
+                }
+            });//login click
+
+            //取消
+            $('#reset').click(function () {
+                parent.layer.close(index);
+            });//reset click
+        });//func
+    </script>
+
+</head>
+<body style="overflow: hidden">
+    <form id="logform">
+        <table border="0" style="width:300px;margin-left:5px;">
+            <tr>
+                <td style="padding-bottom: 5px;width:55px;">新密码：</td>
+                <td colspan="2"><input type="password" class="login" id="newpass" /></td>
+            </tr>
+            <tr>
+                <td style="padding-bottom: 5px;width:55px;"> 确认密码：</td>
+                <td colspan="2">
+                    <input type="password" class="login" id="surepass" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align:center">
+                    <input type="button" value="确定" class="login_button" id="login" />
+                    <input type="button" value="取消" class="reset_botton" id="reset" />
+                </td>
+            </tr>
+        </table>
+        <div id="message" style="color:red;text-align:center">
+
+        </div>
+    </form>
+</body>
+</html>

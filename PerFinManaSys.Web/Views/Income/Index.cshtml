@@ -1,0 +1,239 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/Main_Frame.cshtml";
+}
+@section scripts{
+    <script>
+        var PromotionJS = {
+            initGird: function () {
+                $("#dg").datagrid({
+                    url: '/Income/GetIncomeData',
+                    toolbar: '#tool_bar',
+                    fit: true,
+                    singleSelect: false,
+                    selectOnCheck: true,//true勾选会选择行，false勾选不选择行, 1.3以后有此选项。重点在这里
+                    checkOnSelect: true, //true选择行勾选，false选择行不勾选, 1.3以后有此选项
+                    pageNumber: 1,
+                    pageSize: 10,
+                    fitColumns: true,
+                    pagination: true,
+                    rownumbers: true,
+                    columns: [[
+                      { field: 'ck', checkbox: true, width: '30' },  //复选框
+                      { field: 'I_ID', title: 'ID', hidden: 'true', width: 100 },
+                      { field: 'I_Amount', title: '消费类型', width: 100 },
+                      { field: 'I_Date', title: '金额(元)', width: 100 },
+                      { field: 'I_Remark', title: '备注', width: 100 }
+                    ]]
+                }); //grid
+            }, //initGird
+
+        };//PromotionJS
+        var url;
+        //存储要修改的用户
+        var rowData;
+        function newUser() {
+            $('#dlg').dialog('open').dialog('setTitle', '新建入账');
+            $('#fm').form('clear');
+            url = '/Income/AddIncome';
+        }
+        function editUser() {
+            var row = $('#dg').datagrid('getSelected');
+            if (row) {
+                $('#dlg').dialog('open').dialog('setTitle', '修改入账');
+                //$('#fm').form('load', row);
+                //存储要修改的用户
+                //提交
+                $.ajax({
+                    url: '/Income/GetIncomeDetail',
+                    type: 'post',
+                    dataType: 'json',
+                    data: { id: row.I_ID },
+                    success: function (data) {
+                        $('#fm').form('load', data);
+                    },
+                    error: function (e) {
+                        $.messager.alert('提示信息', e.responseText, 'error');
+                    }
+                });
+            } else {
+                $.messager.alert('提示信息', '请选择要修改的数据!', 'info');
+            }
+            url = "/Income/EditIncome";
+        }
+        //提交增加
+        function SubmitUser() {
+            $.ajax({
+                url: url,
+                type: 'post',
+                dataType: 'json',
+                async: false,
+                data: $('#fm').serialize(),
+                success: function (data) {
+                    if (data.flag == "Success") {
+                        $('#dlg').dialog('close');        // close the dialog
+                        $('#dg').datagrid('reload');    // reload the user data
+                        Inital();
+                    } else {
+                        $.messager.alert('提示信息', data.Message, 'error');
+                    }
+                },
+                beforeSend: function () {
+                    return $('#fm').form('validate');
+                },
+                error: function (e) {
+                    $.messager.alert('提示信息', e.responseText, 'error');
+                }
+            });//ajax
+            rowData = null;
+        }
+
+        function destroyUser() {
+            //返回选中多行
+            var selRow = $('#dg').datagrid('getSelections')
+            //判断是否选中行
+            if (selRow.length == 0) {
+                $.messager.alert("提示", "请选择要删除的行！", "info");
+                return;
+            } else {
+                var temID = "";
+                //批量获取选中行的评估模板ID
+                for (i = 0; i < selRow.length; i++) {
+                    if (temID == "") {
+                        temID = selRow[i].I_ID;
+                    } else {
+                        temID = selRow[i].I_ID + "," + temID;
+                    }
+                }
+                $.messager.confirm('提示', '是否删除选中数据?', function (r) {
+                    if (!r) {
+                        return;
+                    }
+                    //提交
+                    $.ajax({
+                        url: '/Income/DeleteIncome',
+                        type: 'post',
+                        dataType: 'json',
+                        data: { id: temID },
+                        success: function (data) {
+                            if (data.flag == "Success") {
+                                $('#dlg').dialog('close');        // close the dialog
+                                $('#dg').datagrid('reload');    // reload the user data
+                                Inital();
+                            } else {
+                                $.messager.alert('提示信息', data.Message, 'error');
+                            }
+                        },
+                        error: function (e) {
+                            $.messager.alert('提示信息', e.responseText, 'error');
+                        }
+                    });//ajax
+                });
+            }
+        }
+        //时间databox格式
+        function myformatter(date) {
+            var y = date.getFullYear();
+            var m = date.getMonth() + 1;
+            var d = date.getDate();
+            return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+        }
+        function myparser(s) {
+            if (!s) return new Date();
+            var ss = (s.split('-'));
+            var y = parseInt(ss[0], 10);
+            var m = parseInt(ss[1], 10);
+            var d = parseInt(ss[2], 10);
+            if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                return new Date(y, m - 1, d);
+            } else {
+                return new Date();
+            }
+        }
+        //初始化，消费总数，平均消费
+        function Inital() {
+            $.ajax({
+                url: '/Income/GetIncomeSum',
+                data: {
+                    begindate: $('#begindate').datebox('getValue'),
+                    enddate: $('#enddate').datebox('getValue')
+                },
+                dataType: 'json',
+                success: function (data) {
+                    $('#total').text(data["sum"]);
+                },
+                error: function (e) {
+                    $.messager.alert('提示信息', data.Message, 'error');
+                },
+            });
+        }
+        $(function () {
+            //初始化gridview
+            PromotionJS.initGird();
+            Inital();
+            //查询
+            $('#searchModuel').click(function () {
+                $('#dg').datagrid('load', {
+                    begindate: $('#begindate').datebox('getValue'),
+                    enddate: $('#enddate').datebox('getValue')
+                });
+                $('#dg').datagrid({
+                    onLoadSuccess: function () {
+                        Inital();
+                    }
+                });
+            });
+            //导出excel
+            $('#export').click(function () {
+                var rows = $('#dg').datagrid("getRows"); //获取所有行
+                if (rows.length > 0) {
+                    window.location.href = String.format('/Income/GetIncomeData?begindate={1}&enddate={2}&export=exp',
+                         $('#begindate').datebox('getValue'), $('#enddate').datebox('getValue'));
+                } else {
+                    $.messager.alert("提示", "暂无数据，无法导出！", "info");
+                }
+            });
+        });//func
+    </script>
+}
+@section main_body{
+    <table id="dg" class="easyui-datagrid" style="width:700px;padding:2px"></table>
+    <!--列表工具栏-->
+    <div id="tool_bar">
+        <a id="newUser" class="easyui-linkbutton" plain="true" iconcls="icon-add" onclick="newUser()">新建</a>
+        <a id="edit" class="easyui-linkbutton" plain="true" iconcls="icon-edit" onclick="editUser()">修改</a>
+        <a id="del" class="easyui-linkbutton" plain="true" iconcls="icon-cancel" onclick="destroyUser()">删除</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <label>消费总金额:</label>
+        &nbsp;
+        <label id="total"></label>
+        &nbsp;
+        <a class="easyui-linkbutton" plain="true" iconcls="icon-print" id="export">导出Excel</a>
+        <div style="float:right">
+            <label>开始时间：</label>
+            <input class="easyui-datebox" id="begindate" data-options="formatter:myformatter,parser:myparser"></input>
+            <label>结束时间：</label>
+            <input class="easyui-datebox" id="enddate" data-options="formatter:myformatter,parser:myparser"></input>&nbsp;&nbsp;
+            <a class="easyui-linkbutton" plain="true" iconcls="icon-search" id="searchModuel">查询</a>
+        </div>
+    </div>
+    <div id="dlg" class="easyui-dialog" style="width:290px; height:250px; padding: 10px 20px"
+         closed="true" buttons="#dlg-buttons">
+        <form id="fm" method="post">
+            <div class="fitem">
+                <label>消费金额:</label>
+                <input type="hidden" name="I_ID" />
+                <input type="hidden" name="I_Date" />
+                <input name="I_Amount" class="easyui-numberbox" precision="1" id="E_Amount" required="true">
+            </div><br />
+            <div class="fitem">
+                <label>备&nbsp;&nbsp;注:</label>
+                <input class="easyui-textbox" name="I_Remark" id="E_Remark" data-options="multiline:true" style="height:110px">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconcls="icon-ok" onclick="SubmitUser()" style="width:90px">确定</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+}

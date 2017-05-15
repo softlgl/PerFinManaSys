@@ -1,0 +1,158 @@
+﻿@using PerFinManaSys.Web.Auth
+@using PerFinManaSys.Web.Models
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>个人财务管理系统</title>
+    <link href="~/Content/css/page/index.css" rel="stylesheet" />
+    <link href="~/Content/css/icon/icon.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/Scripts/EasyUI/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="~/Scripts/EasyUI/themes/icon.css">
+    <script type="text/javascript" src="~/Scripts/EasyUI/jquery.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/EasyUI/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/EasyUI/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#userpage').click(function () {
+                addTabs($(this).text(), '/UserManage/UserList');
+            });//list click
+
+            $('#category').click(function () {
+                addTabs($(this).text(), '/Category/Index');
+            });//category click
+
+            $('#expenses').click(function () {
+                addTabs($(this).text(), '/Expenses/Index');
+            });//expenses click
+            //收入操作
+            $('#income').click(function () {
+                addTabs($(this).text(), '/Income/Index');
+            });
+            //收入操作
+            $('#consumptionscale').click(function () {
+                addTabs($(this).text(), '/Report/ConsumptionScale');
+            });
+            //退出系统操作
+            $('#mm_user .loginOut').click(function () {
+                location.href = "/Login/Sigout";
+            });
+            //修改密码
+            $('#mm_user .changepwd').click(function () {
+                $('#dlg').dialog('open').dialog('setTitle', '修改密码');
+                $('#fm').form('clear');
+            });
+            //consumptionscale
+            //确认修改
+            $('#save').click(function () {
+                $.ajax({
+                    url: '/UserManage/UpdatePass',
+                    type: 'post',
+                    dataType: 'json',
+                    data: $('#fm').serialize(),
+                    success: function (data) {
+                        if (data.flag == "Success") {
+                            $('#dlg').dialog('close');        // close the dialog
+                            $('#dg').datagrid('reload');    // reload the user data
+                        } else {
+                            $.messager.alert('提示信息', data.Message, 'error');
+                        }
+                    },
+                    beforeSend: function () {
+                        return $('#fm').form('validate');
+                    },
+                    error: function (e) {
+                        $.messager.alert('提示信息', e.responseText, 'error');
+                    }
+                });//ajax
+            });
+        });//func
+
+        /**
+         * 刷新tab
+         * @@cfg
+         *example: {tabTitle:'tabTitle',url:'refreshUrl'}
+         *如果tabTitle为空，则默认刷新当前选中的tab
+         *如果url为空，则默认以原来的url进行reload
+         */
+        function refreshTab(cfg) {
+            var refresh_tab = cfg.tabTitle ? $('#tt').tabs('getTab', cfg.tabTitle) : $('#tt').tabs('getSelected');
+            if (refresh_tab && refresh_tab.find('iframe').length > 0) {
+                var _refresh_ifram = refresh_tab.find('iframe')[0];
+                var refresh_url = cfg.url ? cfg.url : _refresh_ifram.src;
+                //_refresh_ifram.src = refresh_url;
+                _refresh_ifram.contentWindow.location.href = refresh_url;
+            }
+        }
+
+        function addTabs(txt,url)
+        {
+            if ($('#tt').tabs('exists', txt)) {
+                $('#tt').tabs('select', txt);
+            } else {
+                $('#tt').tabs('add', {
+                    title: txt,
+                    fit: true,
+                    closable: true,
+                    content: '<iframe frameborder="0" src="'+url+'" style="width:100%;height:100%;"></iframe>',
+                    width: $('layoutcenter').width() - 10
+                });
+            }
+        }
+    </script>
+</head>
+<body class="easyui-layout">
+    @Html.Partial("_LayoutPartial")
+    <div data-options="region:'west',split:true,title:'管理菜单'" style="width:20%;padding:10px;">
+        <ul class="easyui-tree">
+            <li data-options="state:'open'">
+                <span>管理菜单</span>
+                <ul>
+                    @{
+                        Users user = FormsAuth.GetUserData();
+                        if (user.U_Role == 0)
+                        {
+                            <li><a id="userpage">用户管理</a></li>
+                        }
+                    }
+                    <li data-options="state:'open'">
+                        <span>账务管理</span>
+                        <ul>
+                            <li><a id="expenses" onclick="">账务明细</a></li>
+                            <li><a id="category" onclick="">模块管理</a></li>
+                            <li><a id="income" onclick="">收入管理</a></li>
+                        </ul>
+                    </li>
+                    <li data-options="state:'open'">
+                        <span>统计报表</span>
+                        <ul>
+                            <li><a id="consumptionscale" onclick="">消费比例</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                </li>
+            </ul>
+</div>
+    <div data-options="region:'center'" style="width:70%;" id="layoutcenter">
+        <div id="tt" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true" style="width:100%; height:100% ;overflow:hidden">
+            @if (user.U_Role == 0)
+            {
+                <div title="用户管理" style="overflow:hidden;padding:5px;" data-options="closable:true,fit:true">
+                    <iframe id="ifm" scrolling="yes" frameborder="0" src="/UserManage/UserList" style="width:100%;height:100%;padding:2px;"></iframe>
+                </div>
+            }
+            else
+            {
+                <div title="账务明细" style="overflow:hidden;padding:5px;" data-options="closable:true,fit:true">
+                    <iframe id="ifm" scrolling="yes" frameborder="0" src="/Expenses/Index" style="width:100%;height:100%;padding:2px;"></iframe>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+﻿@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <title>@ViewBag.CnName-登录</title>
+    <link href="~/Content/css/page/login.css" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/jquery-1.8.2.js"></script>
+    <script src="~/Scripts/layer/layer.js"></script>
+    <script src="~/Scripts/myjs/viewModel/login.js"></script>
+    <script src="http://counter.sina.com.cn/ip"></script>
+    <script>
+        $(function () {
+            //用户注册
+            $('#reg').click(function () {
+                layer.open({
+                    type: 2,
+                    title: '用户注册',
+                    area: ['300px', '205px'],
+                    fix: false, //不固定
+                    maxmin: true,
+                    content: '/RegUpdateHtml/Register.html'
+                });//layer
+            });//reg click
+
+            //找回密码
+            $('#findpass').click(function () {
+                layer.open({
+                    type: 2,
+                    title: '找回密码',
+                    area: ['300px', '180px'],
+                    fix: false, //不固定
+                    maxmin: true,
+                    content: '/RegUpdateHtml/InfoSure.html'
+                });//layer
+            });//findpass click
+        });//func
+    </script>
+</head>
+<body>
+    <div class="second_body">
+        <form id="logform">
+            <div class="logo"><img src="/Content/images/login/logo.png" alt="" /></div>
+            <div class="title-zh">@ViewBag.CnName</div>
+            <div class="title-en" style="@ViewBag.EnNameStyle">@ViewBag.EnName</div>
+            <div class="message"></div>
+            @*<table border="0" style="width:300px;">*@
+            <table border="0" style="width:325px;">
+                <tr>
+                    <td style="padding-bottom: 5px;width:55px;">用户名：</td>
+                    <td colspan="2"><input type="text" class="login" id="username" /></td>
+                    <td><a href="javascript:void(0)" class="mya" id="reg">注册账号</a></td>
+                </tr>
+                <tr>
+                    <td class="lable" style="letter-spacing: 0.5em; vertical-align: middle">密码：</td>
+                    <td colspan="2"><input type="password" class="login" id="password" /></td>
+                    <td><a href="javascript:void(0)" class="mya" id="findpass">找回密码</a></td>
+                </tr>
+                <tr>
+                    <td> 验证码：</td>
+                    <td colspan="2">
+                        @*<input type="checkbox" />
+                    <span>系统记住我</span>*@
+                        <input type="text" class="checks" id="txtCheckCode" />
+                        <img src="/Login/CheckCode" style="width:85px;height:26px;vertical-align:top" alt="验证码" id="imgCheckCode" title="点击切换" onclick="viewModel.GetCode();" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="text-align:center">
+                        <input type="button" value="登录" class="login_button" id="login" />
+                        <input type="reset" value="重置" class="reset_botton" id="reset" />
+                    </td>
+                </tr>
+            </table>
+       </form>
+    </div>
+</body>
+</html>

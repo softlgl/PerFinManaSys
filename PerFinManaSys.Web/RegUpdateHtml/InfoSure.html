@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="../Content/css/page/login.css" rel="stylesheet" type="text/css" />
+    <script src="../Scripts/jquery-1.8.2.js"></script>
+    <script src="../Scripts/layer/layer.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+            $('#login').click(function () {
+                var username = $('#username').val();
+                var tel = $('#tel').val();
+                if (username == null || username.length == 0) {
+                    $('#message').html("用户名不能为空！");
+                } else if (tel == null || tel.length == 0) {
+                    $('#message').html("邮箱不能为空！");
+                } else {
+                    var re = /^(\w-*\.*)+@(\w-?)+(\.\w{2,})+$/;
+                    if (!re.test(tel)) {
+                        $('#message').html("邮箱格式不正确！");
+                    } else {
+                        $.ajax({
+                            type: "POST",
+                            url: "/UserManage/FindUserInfo",
+                            data: { U_Name: username,U_Tel: tel },
+                            dataType: "json",
+                            //contentType: "application/json",
+                            success: function (d) {
+                                if (d.flag == 'Success') {
+                                    
+                                    parent.layer.open({
+                                        type: 2,
+                                        title: '找回密码',
+                                        area: ['300px', '180px'],
+                                        fix: false, //不固定
+                                        maxmin: true,
+                                        content: '/RegUpdateHtml/UpdatePass.html'
+                                    });//layer
+                                    //关闭弹窗
+                                    parent.layer.close(index);
+                                } else {
+                                    $('#message').html(d.Message);
+                                }
+                            },
+                            error: function (e) {
+                                $('#message').html(e.responseText);
+                            },
+                            beforeSend: function () {
+                                $('form').find("input").attr("disabled", true);
+                                $('#message').html("正在处理，请稍候...");
+                            },
+                            complete: function () {
+                                $('form').find("input").attr("disabled", false);
+                            }
+                        });//ajax
+                    }//邮箱验证else
+                }
+            });//login click
+
+            //取消
+            $('#reset').click(function () {
+                parent.layer.close(index);
+            });//reset click
+        });//func
+    </script>
+</head>
+<body style="overflow: hidden">
+    <form id="logform">
+        <table border="0" style="width:300px;margin-left:5px;">
+            <tr>
+                <td style="padding-bottom: 5px;width:55px;">用户名：</td>
+                <td colspan="2"><input type="text" class="login" id="username" /></td>
+            </tr>
+            <tr>
+                <td> 邮箱：</td>
+                <td colspan="2">
+                    <input type="text" class="login" id="tel" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align:center">
+                    <input type="button" value="下一步" class="login_button" id="login" />
+                    <input type="button" value="取消" class="reset_botton" id="reset" />
+                </td>
+            </tr>
+        </table>
+        <div id="message" style="color:red;text-align:center">
+
+        </div>
+    </form>
+</body>
+</html>

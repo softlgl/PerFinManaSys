@@ -1,0 +1,89 @@
+﻿@{
+    ViewBag.Title = "ConsumptionScale";
+    Layout = "~/Views/Shared/Main_Frame.cshtml";
+}
+
+@section scripts{
+<script src="~/Scripts/echarts/echarts.js"></script>
+<script src="~/Scripts/echarts/mycharts.js"></script>
+<script type="text/javascript">
+    window.onload = function () {
+        Inital();
+        $('#searchModuel').click(function () {
+            Inital();
+        });
+    };
+    function Inital() {
+        // 路径配置
+        require.config({
+            paths: {
+                echarts: '/Scripts/echarts'
+            }
+        });
+        // 使用
+        require(
+            [
+                'echarts',
+                'echarts/theme/default',
+                'echarts/chart/pie' // 使用柱状图就加载bar模块，按需加载
+            ],
+            function (ec, theme) {
+                Show(ec, theme);
+            }//func
+        );//req
+    }
+    function Show(ec,theme) {
+        // 基于准备好的dom，初始化echarts图表
+        var myChart = ec.init(document.getElementById('main'), theme);
+        $.ajax({
+            type: 'get',
+            url: '/Report/ConsumptionData',
+            data: { 'beginDate': $('#begindate').datebox('getValue'), 'endDate': $('#enddate').datebox('getValue') },
+            success: function (data) {
+                var option = echatrs({ text: '消费比例数据报表', subtext: '', x: 'center' },
+                    eval(data.xdata),
+                         [
+                            {
+                                name: '消费比例',
+                                type: 'pie',
+                                radius: '55%',
+                                center: ['50%', '60%'],
+                                data: data.series
+                            }
+                         ]);//option
+                // 为echarts对象加载数据
+                myChart.setOption(option);
+            }//sucess
+        });//ajax
+    }
+    //时间databox格式
+    function myformatter(date) {
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        var d = date.getDate();
+        return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+    }
+    function myparser(s) {
+        if (!s) return new Date();
+        var ss = (s.split('-'));
+        var y = parseInt(ss[0], 10);
+        var m = parseInt(ss[1], 10);
+        var d = parseInt(ss[2], 10);
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+            return new Date(y, m - 1, d);
+        } else {
+            return new Date();
+        }
+    }
+</script>
+}
+@section main_body{
+<div style="text-align:right;margin-bottom:40px;font-size:12px">
+    <label>开始时间：</label>
+    <input class="easyui-datebox" id="begindate" data-options="formatter:myformatter,parser:myparser"></input>
+    <label>结束时间：</label>
+    <input class="easyui-datebox" id="enddate" data-options="formatter:myformatter,parser:myparser"></input>&nbsp;&nbsp;
+    <a class="easyui-linkbutton" plain="true" iconcls="icon-search" id="searchModuel">查询</a>
+</div>
+<div id="main" style="height:400px;margin:30px"></div>
+}

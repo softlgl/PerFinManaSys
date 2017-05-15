@@ -1,0 +1,179 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/Main_Frame.cshtml";
+}
+@section scripts{
+    <script>
+        var PromotionJS = {
+            initGird: function () {
+                $("#dg").datagrid({
+                    url: '/Category/GetCategoryPaging',
+                    toolbar: '#tool_bar',
+                    fit: true,
+                    singleSelect: false,
+                    selectOnCheck: true,//true勾选会选择行，false勾选不选择行, 1.3以后有此选项。重点在这里
+                    checkOnSelect: true, //true选择行勾选，false选择行不勾选, 1.3以后有此选项
+                    pageNumber: 1,
+                    pageSize: 10,
+                    fitColumns: true,
+                    pagination: true,
+                    rownumbers: true,
+                    columns: [[
+                      { field: 'ck', checkbox: true, width: '30' },  //复选框
+                      { field: 'C_ID', title: 'ID', hidden: 'true', width: 100 },
+                      { field: 'C_UsersID', title: '用户', hidden: 'true',width: 100 },
+                      { field: 'C_Name', title: '模块名称', width: 100 }
+                    ]]
+                }); //grid
+            }, //initGird
+
+        };//PromotionJS
+        var url;
+        //存储要修改的用户
+        var rowData;
+        function newUser() {
+            $('#dlg').dialog('open').dialog('setTitle', '新建模块');
+            $('#fm').form('clear');
+            url = '/Category/AddCategory';
+        }
+        function editUser() {
+            var row = $('#dg').datagrid('getSelected');
+            if (row) {
+                $('#dlg').dialog('open').dialog('setTitle', '修改模块名称');
+                $('#fm').form('load', row);
+                //存储要修改的用户
+                rowData = row;
+                url = '/Category/EditCategory'
+            } else {
+                $.messager.alert('提示信息', '请选择要修改的数据!', 'info');
+            }
+        }
+        function saveUser() {
+            if (rowData == null) {
+                CheckUser();
+            }
+            else if (rowData.C_Name != $('#C_Name').val()) {
+                CheckUser();
+            } else {
+                SubmitUser();
+            }//else
+        }
+        //检测用户是否存在
+        function CheckUser() {
+            $.ajax({
+                url: '/Category/IsExit',
+                type: 'post',
+                dataType: 'json',
+                data: $('#fm').serialize(),
+                success: function (data) {
+                    if (data.flag == "False") {
+                        $.messager.alert('提示信息', data.Message, 'info');
+                    }
+                    else {
+                        SubmitUser();
+                    }
+                },
+                error: function (e) {
+                    $.messager.alert('提示信息', e.responseText, 'error');
+                },
+                beforeSend: function () {
+                    return $('#fm').form('validate');
+                }
+            });//ajax
+        }
+        //提交增加
+        function SubmitUser() {
+            $.ajax({
+                url: url,
+                type: 'post',
+                dataType: 'json',
+                data: $('#fm').serialize(),
+                success: function (data) {
+                    if (data.flag == "Success") {
+                        $('#dlg').dialog('close');        // close the dialog
+                        $('#dg').datagrid('reload');    // reload the user data
+                    } else {
+                        $.messager.alert('提示信息', data.Message, 'error');
+                    }
+                },
+                beforeSend: function () {
+                    return $('#fm').form('validate');
+                },
+                error: function (e) {
+                    $.messager.alert('提示信息', e.responseText, 'error');
+                }
+            });//ajax
+            rowData = null;
+        }
+
+        function destroyUser() {
+            //返回选中多行
+            var selRow = $('#dg').datagrid('getSelections')
+            //判断是否选中行
+            if (selRow.length == 0) {
+                $.messager.alert("提示", "请选择要删除的行！", "info");
+                return;
+            } else {
+                var temID = "";
+                //批量获取选中行的评估模板ID
+                for (i = 0; i < selRow.length; i++) {
+                    if (temID == "") {
+                        temID = selRow[i].C_ID;
+                    } else {
+                        temID = selRow[i].C_ID + "," + temID;
+                    }
+                }
+                $.messager.confirm('提示', '是否删除选中数据?', function (r) {
+                    if (!r) {
+                        return;
+                    }
+                    //提交
+                    $.ajax({
+                        url: '/Category/DeleteCategory',
+                        type: 'post',
+                        dataType: 'json',
+                        data: { id: temID },
+                        success: function (data) {
+                            if (data.flag == "Success") {
+                                $('#dlg').dialog('close');        // close the dialog
+                                $('#dg').datagrid('reload');    // reload the user data
+                            } else {
+                                $.messager.alert('提示信息', data.Message, 'error');
+                            }
+                        },
+                        error: function (e) {
+                            $.messager.alert('提示信息', e.responseText, 'error');
+                        }
+                    });//ajax
+                });
+            }
+        }
+        $(function () {
+            PromotionJS.initGird();
+        });//func
+    </script>
+}
+@section main_body{
+    <table id="dg" class="easyui-datagrid" style="width:700px;padding:2px"></table>
+    <!--列表工具栏-->
+    <div id="tool_bar">
+        <a id="newUser" class="easyui-linkbutton" plain="true" iconcls="icon-add" onclick="newUser()">新建</a>
+        <a id="edit" class="easyui-linkbutton" plain="true" iconcls="icon-edit" onclick="editUser()">修改</a>
+        <a id="del" class="easyui-linkbutton" plain="true" iconcls="icon-cancel" onclick="destroyUser()">删除</a>
+    </div>
+    <div id="dlg" class="easyui-dialog" style="width:290px;height:130px;padding:10px 20px"
+         closed="true" buttons="#dlg-buttons">
+        <form id="fm" method="post">
+            <div class="fitem">
+                <label>模块名称:</label>
+                <input type="hidden" name="C_ID" />
+                <input name="C_Name" class="easyui-textbox" id="C_Name" required="true">
+                <input type="hidden" name="C_UsersID"/>
+            </div><br />
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconcls="icon-ok" onclick="saveUser()" style="width:90px">确定</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+}

@@ -1,0 +1,40 @@
+﻿<div region="north" class="head-north" split="true" border="false" style="height:66px; overflow-y:hidden">
+            <span class="head head-right">
+                <a href="javascript:void(0)" class="easyui-menubutton" data-options="menu:'#mm_user',iconCls:'icon-user'">当前用户:@ViewBag.UserName</a>
+                <div id="mm_user" style="width:150px;">  
+                    @*<div data-options="iconCls:'icon-rainbow'" class="myconfig">个人设置</div> *@
+                    <div data-options="iconCls:'icon-edit'" class="changepwd">修改密码</div> 
+                    <div class="menu-sep"></div>  
+                    <div data-options="iconCls:'icon-user_go'" class="loginOut">安全退出</div>  
+                </div> 
+            </span>
+
+            <span class="head-left" style="color:white" >
+                @ViewBag.Title
+            </span>
+            <span style="color:white">作者：李国梁&nbsp;&nbsp;&nbsp;&nbsp;
+                <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&amp;uin=820522086&amp;site=qq&amp;menu=yes" onfocus="this.blur()">
+                    <img style="vertical-align:middle;" border="0" src="http://wpa.qq.com/pa?p=2:820522086:41" alt="作者QQ" title="作者QQ">
+                </a>
+            </span>
+            
+            <div id="wnav"></div>
+ </div>
+<div id="dlg" class="easyui-dialog" style="width:295px;height:170px;padding:10px 20px;"
+     closed="true" buttons="#dlg-buttons">
+    <form id="fm" method="post">
+        <div class="fitem">
+            <label>密&nbsp;码:</label>
+            <input name="U_PassWord" class="easyui-textbox" id="passworld" required="true">
+        </div><br />
+        <div class="fitem">
+            <label>新密码:</label>
+            <input name="U_PassWordConfirm" class="easyui-textbox" id="passworldconfirm" required="true">
+        </div><br />
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="javascript:void(0)" class="easyui-linkbutton c6" iconcls="icon-ok" id="save" style="width:90px">确定</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+</div>
+}
