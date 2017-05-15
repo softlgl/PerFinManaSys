@@ -21,6 +21,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <TargetFrameworkProfile />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -208,6 +209,10 @@
     <Compile Include="Tools\XmlUtil.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\db\MoneyWatcherDB.mdf" />
+    <Content Include="App_Data\db\MoneyWatcherDB_log.ldf">
+      <DependentUpon>MoneyWatcherDB.mdf</DependentUpon>
+    </Content>
     <Content Include="Content\css\icon\doc\chm.gif" />
     <Content Include="Content\css\icon\doc\doc.gif" />
     <Content Include="Content\css\icon\doc\empty.gif" />
