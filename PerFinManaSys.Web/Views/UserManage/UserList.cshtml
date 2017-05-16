@@ -32,6 +32,7 @@
                               }
                           }
                       },
+                      { field: 'U_LastLoginTime', title: '最近登录时间', width: 100 },
                       { field: 'U_Tel', title: '注册邮箱', width: 70 },
                       { field: 'U_RegistDate', title: '注册时间', width: 70 }
                     ]]
@@ -177,10 +178,11 @@
     <div id="dlg" class="easyui-dialog" style="width:285px;height:235px;padding:10px 20px"
         closed="true" buttons="#dlg-buttons">
         <form id="fm" method="post">
+            <input type="hidden" name="U_ID" />
+            <input type="hidden" name="U_RegistDate" />
+            <input type="hidden" name="U_LastLoginTime" />
             <div class="fitem">
                 <label>用户名:</label>
-                <input type="hidden" name="U_ID" />
-                <input type="hidden" name="U_RegistDate"/>
                 <input name="U_Name" class="easyui-textbox" id="username" required="true">
             </div><br />
             <div class="fitem">

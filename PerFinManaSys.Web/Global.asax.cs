@@ -37,13 +37,18 @@ namespace PerFinManaSys.Web
 
         protected void Application_AuthenticateRequest(Object sender,EventArgs e)
         {
-            Users user=FormsAuth.GetUserData();
-            string role = user.U_Role == 0 ? UserAuth.Admin:UserAuth.User;
-            string[] roles = {role};
+            Users user = FormsAuth.GetUserData();
+            string role = user.U_Role == 0 ? UserAuth.Admin : UserAuth.User;
+            string[] roles = { role };
             if (Context.User != null)
             {
-                Context.User = new System.Security.Principal.GenericPrincipal(Context.User.Identity,roles);
+                Context.User = new System.Security.Principal.GenericPrincipal(Context.User.Identity, roles);
             }
+
+            //Users userinfo = FormsAuth.GetUserData();
+            //string uid=userinfo.U_ID==Guid.Empty?null:userinfo.U_ID.ToString();
+            //UserInfoPrincipal newUser = new UserInfoPrincipal(uid, userinfo.U_Name, userinfo.U_Role);
+            //HttpContext.Current.User = newUser;
         }
 
     }

@@ -1,19 +1,17 @@
-﻿using PerFinManaSys.Web.Models;
+﻿using PerFinManaSys.Web.Auth;
+using PerFinManaSys.Web.Models;
 using PerFinManaSys.Web.MyActionResult;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
 namespace PerFinManaSys.Web.Controllers
 {
     public class BaseController : Controller
     {
-        protected MoneyWatcherDBEntities db;
+        protected MoneyWatcherDBEntities Db;
+        protected Users user = FormsAuth.GetUserData();
         public BaseController()
         {
-            db = new MoneyWatcherDBEntities();
+            Db = new MoneyWatcherDBEntities();
         }
 
         /// <summary>
@@ -69,7 +67,7 @@ namespace PerFinManaSys.Web.Controllers
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            db.Dispose();
+            Db.Dispose();
         }
     }
 }

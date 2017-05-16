@@ -1,7 +1,6 @@
 ﻿using PerFinManaSys.Web.Tools;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
@@ -23,15 +22,27 @@ namespace PerFinManaSys.Web.Filter
                 filterContext.HttpContext.Server.ClearError();//处理完及时清理异常
                 //转向
                 filterContext.ExceptionHandled = true;
-                int stateCode = (ex is HttpException) ? (ex is HttpException).GetHashCode() : 500;
-                switch (stateCode)
+                int stateCode = (ex is HttpException) ? (true).GetHashCode() : 500;
+                if (filterContext.HttpContext.Request.IsAjaxRequest())
                 {
-                    case 404:
-                        filterContext.Result = new RedirectResult("/NotFound.html");
-                        break;
-                    default:
-                        filterContext.Result = new RedirectResult("/Error.html");
-                        break;
+                    filterContext.Result = new JsonResult
+                    {
+                        ContentEncoding=Encoding.UTF8,
+                        JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                        Data = new { flag = "false", Message = stateCode==404?"请求未找到":"请求发生异常" }
+                    };
+                }
+                else
+                {
+                    switch (stateCode)
+                    {
+                        case 404:
+                            filterContext.Result = new RedirectResult("/404");
+                            break;
+                        default:
+                            filterContext.Result = new RedirectResult("/500");
+                            break;
+                    }
                 }
             }
         }

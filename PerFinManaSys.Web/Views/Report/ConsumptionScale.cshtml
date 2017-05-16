@@ -5,7 +5,7 @@
 
 @section scripts{
 <script src="~/Scripts/echarts/echarts.js"></script>
-<script src="~/Scripts/echarts/mycharts.js"></script>
+<script src="~/Scripts/myjs/mycharts.js"></script>
 <script type="text/javascript">
     window.onload = function () {
         Inital();
@@ -40,7 +40,7 @@
             url: '/Report/ConsumptionData',
             data: { 'beginDate': $('#begindate').datebox('getValue'), 'endDate': $('#enddate').datebox('getValue') },
             success: function (data) {
-                var option = echatrs({ text: '消费比例数据报表', subtext: '', x: 'center' },
+                var option = echatrsPie({ text: '消费比例数据报表', subtext: '', x: 'center' },
                     eval(data.xdata),
                          [
                             {

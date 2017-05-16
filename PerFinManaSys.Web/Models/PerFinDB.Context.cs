@@ -29,5 +29,6 @@ namespace PerFinManaSys.Web.Models
         public DbSet<Expenses> Expenses { get; set; }
         public DbSet<Users> Users { get; set; }
         public DbSet<Income> Income { get; set; }
+        public DbSet<Logins> Logins { get; set; }
     }
 }

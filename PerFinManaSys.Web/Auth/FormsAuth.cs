@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using PerFinManaSys.Web.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 using System.Web.Security;
 
@@ -34,18 +32,23 @@ namespace PerFinManaSys.Web.Auth
 
         public static T GetUserData<T>() where T : class, new()
         {
-            var UserData = new T();
+            var userData = new T();
             try
             {
                 var context = HttpContext.Current;
                 var cookie = context.Request.Cookies[FormsAuthentication.FormsCookieName];
-                var ticket = FormsAuthentication.Decrypt(cookie.Value);
-                UserData = JsonConvert.DeserializeObject<T>(ticket.UserData);
+                if (cookie != null)
+                {
+                    var ticket = FormsAuthentication.Decrypt(cookie.Value);
+                    if (ticket != null) userData = JsonConvert.DeserializeObject<T>(ticket.UserData);
+                }
             }
             catch
-            { }
+            {
+                // ignored
+            }
 
-            return UserData;
+            return userData;
         }
     }
 }

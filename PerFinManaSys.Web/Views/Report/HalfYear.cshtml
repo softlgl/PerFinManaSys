@@ -1,0 +1,52 @@
+﻿@{
+    ViewBag.Title = "HalfYear";
+    Layout = "~/Views/Shared/Main_Frame.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/echarts/echarts.js"></script>
+    <script src="~/Scripts/myjs/mycharts.js"></script>
+    <script type="text/javascript">
+        window.onload = function () {
+            Inital();
+        };
+        function Inital() {
+            // 路径配置
+            require.config({
+                paths: {
+                    echarts: '/Scripts/echarts'
+                }
+            });
+            // 使用
+            require(
+                [
+                    'echarts',
+                    'echarts/theme/macarons',
+                    'echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
+                ],
+                function (ec, theme) {
+                    Show(ec, theme);
+                }//func
+            );//req
+        }
+        
+        function Show(ec, theme) {
+            var myChart = ec.init(document.getElementById('main'), theme);
+            $.ajax({
+                type: 'get',
+                url: '/Report/HalfYearData',
+                success: function (data) {
+                    var option = chartsBar(data.xdata, data.series);
+                    // 为echarts对象加载数据
+                    myChart.setOption(option);
+                }//sucess
+            });//ajax
+        }
+
+    </script>
+}
+@section main_body{
+    <div id="main" style="height:400px;margin:30px"></div>
+}
+
+

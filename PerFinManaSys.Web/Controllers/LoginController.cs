@@ -1,20 +1,18 @@
-﻿using Newtonsoft.Json;
-using PerFinManaSys.Web.Auth;
+﻿using PerFinManaSys.Web.Auth;
 using PerFinManaSys.Web.Filter;
-using PerFinManaSys.Web.Models;
 using PerFinManaSys.Web.Tools;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using System.Web.Security;
+using System;
+using System.Data;
+using System.Data.Entity.Migrations;
+using PerFinManaSys.Web.Models;
 
 namespace PerFinManaSys.Web.Controllers
 {
     public class LoginController : BaseController
     {
-        [CompressAttribute]
+        [Compress]
         public ActionResult Index()
         {
             return Mms();
@@ -29,16 +27,18 @@ namespace PerFinManaSys.Web.Controllers
             ViewBag.EnName = "Personal Financial Manage System";
             return View("Index");
         }
+
         /// <summary>
         /// 登录验证
         /// </summary>
-        /// <param name="UserName"></param>
-        /// <param name="PassWord"></param>
+        /// <param name="userName"></param>
+        /// <param name="passWord"></param>
         /// <param name="txtCheckCode"></param>
+        /// <param name="City"></param>
         /// <returns></returns>
-        public ActionResult doAction(string UserName, string PassWord, string txtCheckCode)
+        public ActionResult DoAction(string userName, string passWord, string txtCheckCode,string City)
         {
-            string checkcode = "";
+            string checkcode;
             if (txtCheckCode != null)
             {
                 if (Session["ValidateCode"] == null)
@@ -51,27 +51,36 @@ namespace PerFinManaSys.Web.Controllers
             {
                 return Json(new { flag = "False", Message = "验证码不能为空！" });
             }
-            if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(PassWord))
+            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(passWord))
             {
                 return Json(new { flag = "False", Message = "请填写完整登录信息！" });
             }
-            if (checkcode.ToLower() != txtCheckCode)
+            if (checkcode.ToLower() != txtCheckCode.ToLower())
             {
                 return Json(new { flag = "False", Message = "验证码输入不正确！" });
             }
-            PassWord = DES.DesEncrypt(PassWord, DES.Key);
-            Users user = db.Users.Where(t => t.U_Name == UserName && t.U_PassWord == PassWord).FirstOrDefault();
-            if (user != null)
+            passWord = Des.DesEncrypt(passWord);
+            var users = Db.Users.FirstOrDefault(t => t.U_Name == userName && t.U_PassWord == passWord);
+            if (users == null) return Json(new {flag = "False", Message = "登录失败！"});
+            users.U_LastLoginTime = DateTime.Now;
+            Db.Entry(users).State = EntityState.Modified;
+            var lanIp = HttpHelper.ClientIp;
+            var ip = string.Empty;
+            Logins login=new Logins
             {
-                //写入cookie
-                FormsAuth.SignIn(user);
-                return Json(new { flag = "Success", Message = "登录成功！" });
-            }
-            else
-            {
-                return Json(new { flag = "False",Message="登录失败！" });
-            }
-           
+                L_ID = Guid.NewGuid(),
+                L_City =City,
+                L_HostName = HttpHelper.IsLanIp(lanIp) ? HttpHelper.ClientHostName : string.Empty,
+                L_IP = string.Format("{0}/{1}", ip, lanIp).Trim('/').Replace("::1", "localhost"),
+                L_UID=users.U_ID,
+                L_Role = users.U_Role,
+                L_LoginTime = users.U_LastLoginTime.Value
+            };
+            Db.Logins.AddOrUpdate(login);
+            Db.SaveChanges();
+            //写入cookie
+            FormsAuth.SignIn(users);
+            return Json(new { flag = "Success", Message = "登录成功！" });
         }
 
         /// <summary>
@@ -96,7 +105,7 @@ namespace PerFinManaSys.Web.Controllers
         {
             Session.Clear();
             FormsAuth.SingOut();
-            return RedirectToAction("../User/Login.html");
+            return RedirectToAction("../Login.html");
         }
     }
 }

@@ -19,6 +19,7 @@ namespace PerFinManaSys.Web.Models
         public string U_PassWord { get; set; }
         public int U_Role { get; set; }
         public string U_Tel { get; set; }
-        public Nullable<System.DateTime> U_RegistDate { get; set; }
+        public System.DateTime U_RegistDate { get; set; }
+        public Nullable<System.DateTime> U_LastLoginTime { get; set; }
     }
 }

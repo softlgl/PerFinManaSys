@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Web.UI;
 using System.Drawing.Drawing2D;
 using System.IO;
 
@@ -12,9 +8,6 @@ namespace PerFinManaSys.Web.Tools
 {
     public class ValidateCode
     {
-        public ValidateCode()
-        {
-        }
         /// <summary>
         /// 验证码的最大长度
         /// </summary>
@@ -90,15 +83,14 @@ namespace PerFinManaSys.Web.Tools
             //}
             //return newRandom.ToString();
 
-            int number;
-            char code;
             string checkCode = String.Empty;
 
-            System.Random random = new Random();
+            var random = new Random();
 
             for (int i = 0; i < 4; i++)
             {
-                number = random.Next();
+                var number = random.Next();
+                char code;
                 if (number % 2 == 0)
                     code = (char)('0' + (char)(number % 10));
                 else
@@ -112,8 +104,7 @@ namespace PerFinManaSys.Web.Tools
         /// <summary>
         /// 创建验证码的图片
         /// </summary>
-        /// <param name="containsPage">要输出到的page对象</param>
-        /// <param name="validateNum">验证码</param>
+        /// <param name="validateCode">验证码</param>
         //public void CreateValidateGraphic(string validateCode)
         //{
         //    Bitmap image = new Bitmap((int)Math.Ceiling(validateCode.Length * 12.0), 22);
@@ -183,8 +174,6 @@ namespace PerFinManaSys.Web.Tools
         /// <summary>
         /// 创建验证码的图片
         /// </summary>
-        /// <param name="containsPage">要输出到的page对象</param>
-        /// <param name="validateNum">验证码</param>
         public  byte[] CreateValidateGraphic(string validateCode)
         {
             Bitmap image = new Bitmap((int)Math.Ceiling(validateCode.Length * 20.0), 30);

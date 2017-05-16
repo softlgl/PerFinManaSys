@@ -1,0 +1,137 @@
+﻿@{
+    ViewBag.Title = "title";
+    Layout = "~/Views/Shared/Main_Frame.cshtml";
+}
+
+@section scripts{
+    <script>
+        var PromotionJS = {
+            initGird: function () {
+                $("#dg").datagrid({
+                    url: '/Logs/GetLoginsPaging',
+                    toolbar: '#tool_bar',
+                    fit: true,
+                    singleSelect: false,
+                    selectOnCheck: true,//true勾选会选择行，false勾选不选择行, 1.3以后有此选项。重点在这里
+                    checkOnSelect: true, //true选择行勾选，false选择行不勾选, 1.3以后有此选项
+                    pageNumber: 1,
+                    pageSize: 10,
+                    fitColumns: true,
+                    pagination: true,
+                    rownumbers: true,
+                    columns: [[
+                      { field: 'ck', checkbox: true, width: '30' },  //复选框
+                      { field: 'L_ID', title: 'ID', hidden: 'true', width: 100 },
+                      { field: 'U_Name', title: '用户名', width: 100 },
+                      { field: 'Role', title: '用户角色', width: 100 },
+                      { field: 'U_Tel', title: '邮箱', width: 100 },
+                      { field: 'L_HostName', title: '主机名称', width: 100 },
+                      { field: 'L_IP', title: 'IP地址', width: 100 },
+                      { field: 'L_City', title: '登陆城市', width: 100 },
+                      { field: 'L_LoginTime', title: '登陆时间', width: 100 }
+                    ]]
+                }); //grid
+            }, //initGird
+
+        };//PromotionJS
+        function destroyUser() {
+            //返回选中多行
+            var selRow = $('#dg').datagrid('getSelections')
+            //判断是否选中行
+            if (selRow.length == 0) {
+                $.messager.alert("提示", "请选择要删除的行！", "info");
+                return;
+            } else {
+                var temID = "";
+                //批量获取选中行的评估模板ID
+                for (i = 0; i < selRow.length; i++) {
+                    if (temID == "") {
+                        temID = selRow[i].L_ID;
+                    } else {
+                        temID = selRow[i].L_ID + "," + temID;
+                    }
+                }
+                $.messager.confirm('提示', '是否删除选中数据?', function (r) {
+                    if (!r) {
+                        return;
+                    }
+                    //提交
+                    $.ajax({
+                        url: '/Logs/DeleteLogins',
+                        type: 'post',
+                        dataType: 'json',
+                        data: { id: temID },
+                        success: function (data) {
+                            if (data.flag == "Success") {
+                                $('#dlg').dialog('close');        // close the dialog
+                                $('#dg').datagrid('reload');    // reload the user data
+                            } else {
+                                $.messager.alert('提示信息', data.Message, 'error');
+                            }
+                        },
+                        error: function (e) {
+                            $.messager.alert('提示信息', e.responseText, 'error');
+                        }
+                    });//ajax
+                });
+            }
+        }
+
+        //时间databox格式
+        function myformatter(date) {
+            var y = date.getFullYear();
+            var m = date.getMonth() + 1;
+            var d = date.getDate();
+            return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+        }
+        function myparser(s) {
+            if (!s) return new Date();
+            var ss = (s.split('-'));
+            var y = parseInt(ss[0], 10);
+            var m = parseInt(ss[1], 10);
+            var d = parseInt(ss[2], 10);
+            if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                return new Date(y, m - 1, d);
+            } else {
+                return new Date();
+            }
+        }
+
+        $(function () {
+            PromotionJS.initGird();
+            //查询
+            $('#searchModuel').click(function () {
+                $('#dg').datagrid('load', {
+                    begindate: $('#begindate').datebox('getValue'),
+                    enddate: $('#enddate').datebox('getValue')
+                });
+            });
+            //导出excel
+            $('#export').click(function () {
+                var rows = $('#dg').datagrid("getRows"); //获取所有行
+                if (rows.length > 0) {
+                    window.location.href = String.format('/Logs/GetLoginsPaging?begindate={1}&enddate={2}&export=exp',
+                        $('#begindate').datebox('getValue'), $('#enddate').datebox('getValue'));
+                } else {
+                    $.messager.alert("提示", "暂无数据，无法导出！", "info");
+                }
+            });
+        });//func
+    </script>
+}
+@section main_body{
+    <table id="dg" class="easyui-datagrid" style="width:700px;padding:2px"></table>
+    <!--列表工具栏-->
+    <div id="tool_bar">
+        <a id="del" class="easyui-linkbutton" plain="true" iconcls="icon-cancel" onclick="destroyUser()">删除</a>
+        &nbsp;&nbsp;
+        <a class="easyui-linkbutton" plain="true" iconcls="icon-print" id="export">导出Excel</a>
+        <div style="float: right">
+            <label>开始时间：</label>
+            <input class="easyui-datebox" id="begindate" data-options="formatter:myformatter,parser:myparser"></input>
+            <label>结束时间：</label>
+            <input class="easyui-datebox" id="enddate" data-options="formatter:myformatter,parser:myparser"></input>&nbsp;&nbsp;
+            <a class="easyui-linkbutton" plain="true" iconcls="icon-search" id="searchModuel">查询</a>
+        </div>
+    </div>
+}

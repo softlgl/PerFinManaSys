@@ -2,13 +2,9 @@
 using PerFinManaSys.Web.Auth;
 using PerFinManaSys.Web.Filter;
 using PerFinManaSys.Web.Models;
-using PerFinManaSys.Web.Tools;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
 namespace PerFinManaSys.Web.Controllers
@@ -35,15 +31,12 @@ namespace PerFinManaSys.Web.Controllers
         [OutputCache(Duration=0)]
         public string GetCategoryPaging(int rows = 10, int page = 1)
         {
-            Users user = FormsAuth.GetUserData();
-            if (string.IsNullOrEmpty(user.U_Name)) return JsonConvert.SerializeObject(new { flag = "False", Message = "登录用户信息过期！" });
-            IQueryable<Category> query = db.Category.Where(t=>t.C_UsersID==user.U_ID).OrderBy(t=>t.C_Name);
+            if (string.IsNullOrEmpty(user.U_Name)) 
+                return JsonConvert.SerializeObject(new { flag = "False", Message = "登录用户信息过期！" });
+            IQueryable<Category> query = Db.Category.Where(t=>t.C_UsersID==user.U_ID).OrderBy(t=>t.C_Name);
             int count = query.Count();
             query = query.Skip((page - 1) * rows).Take(rows);
-            Hashtable hashdata = new Hashtable();
-            hashdata.Add("total", count);
-            hashdata.Add("rows", query);
-            return JsonConvert.SerializeObject(hashdata);
+            return JsonConvert.SerializeObject(new {total=count,rows=query });
         }
 
         /// <summary>
@@ -54,28 +47,18 @@ namespace PerFinManaSys.Web.Controllers
         [OutputCache(Duration=0),HttpPost]
         public ActionResult AddCategory(Category c)
         {
-            try
-            {
-                Users user = FormsAuth.GetUserData();
-                if (string.IsNullOrEmpty(user.U_Name)) return Json(new { flag = "False", Message = "登录用户信息过期！" });
-                Category result = db.Category.Where(t => t.C_Name ==c.C_Name&&t.C_UsersID==user.U_ID).FirstOrDefault();
-                if (result != null) return Json(new { flag = "False", Message = "该名称已存在！" });
-                
-                if (!string.IsNullOrEmpty(c.C_Name)) 
-                { 
-                    c.C_ID = Guid.NewGuid();
-                    c.C_UsersID = user.U_ID;
-                    db.Category.Add(c);
-                    db.SaveChanges();
-                    return Json(new { flag = "Success", Message = "添加成功！" });
-                }
-                return Json(new { flag = "False", Message = "请将信息填写完完整！" });
-            }
-            catch (Exception ex)
-            {
-                LogHelper.Error(ex);
-                return Json(new { flag = "False", Message = "添加失败！" });
-            }
+            if (string.IsNullOrEmpty(user.U_Name)) 
+                return Json(new { flag = "False", Message = "登录用户信息过期！" });
+            Category result = Db.Category.FirstOrDefault(t => t.C_Name ==c.C_Name&&t.C_UsersID==user.U_ID);
+            if (result != null) return Json(new { flag = "False", Message = "该名称已存在！" });
+
+            if (string.IsNullOrEmpty(c.C_Name))
+                return Json(new {flag = "False", Message = "请将信息填写完完整！"});
+            c.C_ID = Guid.NewGuid();
+            c.C_UsersID = user.U_ID;
+            Db.Entry(c).State=EntityState.Added;
+            Db.SaveChanges();
+            return Json(new { flag = "Success", Message = "添加成功！" });
         }
         /// <summary>
         /// 修改模块名称
@@ -86,22 +69,10 @@ namespace PerFinManaSys.Web.Controllers
         [HttpPost]
         public ActionResult EditCategory(Category c)
         {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    db.Entry<Category>(c).State = EntityState.Modified;
-                    db.SaveChanges();
-                    return Json(new { flag = "Success", Message = "修改成功！" });
-                }
-                return Json(new { flag = "False", Message = "请将信息填写完完整！" });
-            }
-            catch (Exception ex)
-            {
-                LogHelper.Error(ex);
-                return Json(new { flag = "False", Message = "修改失败！" });
-            }
-           
+            if (!ModelState.IsValid) return Json(new {flag = "False", Message = "请将信息填写完完整！"});
+            Db.Entry(c).State = EntityState.Modified;
+            Db.SaveChanges();
+            return Json(new { flag = "Success", Message = "修改成功！" });
         }
         /// <summary>
         /// 删除记录
@@ -111,13 +82,13 @@ namespace PerFinManaSys.Web.Controllers
         [OutputCache(Duration = 0)]
         public ActionResult DeleteCategory(string id)
         {
-            if (string.IsNullOrEmpty(id)) return Json(new { flag = "False", Message = "请选择删除的记录！" });
-            if(DeleteCate(id))
-            { 
-               return Json(new { flag = "Success", Message = "删除成功！" });
-            }
-            return Json(new { flag = "False", Message = "删除失败！" });
+            return string.IsNullOrEmpty(id) ?
+                Json(new { flag = "False", Message = "请选择删除的记录！" }) : 
+                Json(DeleteCate(id) 
+                ? new { flag = "Success", Message = "删除成功！" } 
+                : new { flag = "False", Message = "删除失败！" });
         }
+
         /// <summary>
         /// 删除Category执行
         /// </summary>
@@ -125,54 +96,40 @@ namespace PerFinManaSys.Web.Controllers
         /// <returns></returns>
         public bool DeleteCate(string id)
         {
-            try
+
+            id.Split(new[] { ',' },StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(e =>
             {
-                id.Split(new char[] { ',' },StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(e =>
+                var gid = Guid.Parse(e);
+                var c = new Category { C_ID = gid };
+                Db.Entry(c).State = EntityState.Deleted;
+                using (var mdb = new MoneyWatcherDBEntities())
                 {
-                    //Guid userid = Guid.Parse(e);
-                    //Category c = db.Category.FirstOrDefault(t => t.C_ID == userid);
-                    //db.Category.Remove(c);
-
-                    Guid gid = Guid.Parse(e);
-                    Category c = new Category() { C_ID = gid };
-                    db.Set<Category>().Attach(c);
-                    db.Entry<Category>(c).State = EntityState.Deleted;
-
-                    using (MoneyWatcherDBEntities mdb = new MoneyWatcherDBEntities())
+                    var exp = Db.Expenses.Where(t => t.E_Type == gid);
+                    foreach (var item in exp)
                     {
-                        IQueryable<Expenses> exp = db.Expenses.Where(t => t.E_Type == gid);
-                        foreach (Expenses item in exp)
-                        {
-                            Expenses ex = new Expenses() { E_ID = item.E_ID };
-                            mdb.Set<Expenses>().Attach(ex);
-                            mdb.Entry<Expenses>(ex).State = EntityState.Deleted;
-                        }
-                        mdb.SaveChanges();
+                        var ex = new Expenses { E_ID = item.E_ID };
+                        mdb.Entry(ex).State = EntityState.Deleted;
                     }
-                });
-                db.SaveChanges();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.Error(ex);
-                return false;
-            }
+                    mdb.SaveChanges();
+                }
+             });
+             Db.SaveChanges();
+             return true;
         }
+
         /// <summary>
         /// 判断是否有相同记录
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="c"></param>
         /// <returns></returns>
         [OutputCache(Duration = 0)]
         public ActionResult IsExit(Category c)
         {
-            Users user = FormsAuth.GetUserData();
             //判断用户是否被注册
-            if (string.IsNullOrEmpty(user.U_Name)) return Json(new { flag = "False", Message = "登录用户信息过期！" });
-            Category result = db.Category.Where(t => t.C_Name == c.C_Name && t.C_UsersID == user.U_ID).FirstOrDefault();
-            if (result != null) return Json(new { flag = "False", Message = "该名称已存在！" });
-            return Json(new { flag = "Success", Message = "记录不存在！" });
+            if (string.IsNullOrEmpty(user.U_Name)) 
+                return Json(new { flag = "False", Message = "登录用户信息过期！" });
+            var result = Db.Category.FirstOrDefault(t => t.C_Name == c.C_Name && t.C_UsersID == user.U_ID);
+            return Json(result != null ? new { flag = "False", Message = "该名称已存在！" } : new { flag = "Success", Message = "记录不存在！" });
         }
 
         /// <summary>
@@ -182,22 +139,13 @@ namespace PerFinManaSys.Web.Controllers
         [OutputCache(Duration = 0)]
         public ActionResult GetCategroyDrop()
         {
-            try
-            {
-                Users user = FormsAuth.GetUserData();
-                //判断用户是否被注册
-                if (string.IsNullOrEmpty(user.U_Name)) return Json(new { flag = "False", Message = "登录用户信息过期！" });
-                var data = from t in db.Category
-                           where t.C_UsersID == user.U_ID
-                           select new { C_ID = t.C_ID, C_Name = t.C_Name };
-                return Json(data,JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.Error(ex);
-                return Json(new { flag = "False", Message = "获取信息失败！" });
-            }
-           
+            //判断用户是否被注册
+            if (string.IsNullOrEmpty(user.U_Name)) 
+                return Json(new { flag = "False", Message = "登录用户信息过期！" });
+            var data = from t in Db.Category
+                        where t.C_UsersID == user.U_ID
+                        select new {t.C_ID, t.C_Name };
+            return Json(data,JsonRequestBehavior.AllowGet);
         }
     }
 }

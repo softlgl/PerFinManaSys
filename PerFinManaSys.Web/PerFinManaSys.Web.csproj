@@ -157,11 +157,17 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Auth\FormsAuth.cs" />
     <Compile Include="Auth\RequiresAuthentication.cs" />
+    <Compile Include="Auth\UserAuthorizeAttribute.cs" />
+    <Compile Include="Auth\UserInfo.cs" />
+    <Compile Include="Auth\UserInfoIdentity.cs" />
+    <Compile Include="Auth\UserInfoPrincipal.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\CategoryController.cs" />
+    <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\ExpensesController.cs" />
     <Compile Include="Controllers\IncomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\LogsController.cs" />
     <Compile Include="Controllers\MainFrameController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
     <Compile Include="Controllers\UserManageController.cs" />
@@ -178,6 +184,9 @@
       <DependentUpon>PerFinDB.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Income.cs">
+      <DependentUpon>PerFinDB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Logins.cs">
       <DependentUpon>PerFinDB.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\PerFinDB.Context.cs">
@@ -200,19 +209,21 @@
     </Compile>
     <Compile Include="Models\VM\ExpenseVM.cs" />
     <Compile Include="Models\VM\IncomeVM.cs" />
+    <Compile Include="Models\VM\LoginsVM.cs" />
     <Compile Include="MyActionResult\CustomJsonResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Route\BaseRoute.cs" />
+    <Compile Include="Route\ErrorRoute.cs" />
+    <Compile Include="Tools\Cache\CacheHelper.cs" />
     <Compile Include="Tools\DES.cs" />
+    <Compile Include="Tools\ExcelHelper.cs" />
     <Compile Include="Tools\ExportExcel.cs" />
+    <Compile Include="Tools\HttpHelper.cs" />
     <Compile Include="Tools\LogHelper.cs" />
     <Compile Include="Tools\ValidateCode.cs" />
     <Compile Include="Tools\XmlUtil.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Data\db\MoneyWatcherDB.mdf" />
-    <Content Include="App_Data\db\MoneyWatcherDB_log.ldf">
-      <DependentUpon>MoneyWatcherDB.mdf</DependentUpon>
-    </Content>
     <Content Include="Content\css\icon\doc\chm.gif" />
     <Content Include="Content\css\icon\doc\doc.gif" />
     <Content Include="Content\css\icon\doc\empty.gif" />
@@ -1743,11 +1754,7 @@
     <Content Include="Content\images\login\logo.png" />
     <Content Include="Content\images\login\reset.jpg" />
     <Content Include="Content\images\logo\logo48.png" />
-    <Content Include="Content\NotFound\bg.gif" />
-    <Content Include="Content\NotFound\emessage.gif" />
-    <Content Include="Content\NotFound\error.gif" />
-    <Content Include="Content\NotFound\left.gif" />
-    <Content Include="Content\NotFound\right.gif" />
+    <Content Include="Content\Error\cat.jpg" />
     <Content Include="Content\page\icon.html" />
     <Content Include="Content\page\reports\Localization\ar.xml" />
     <Content Include="Content\page\reports\Localization\be.xml" />
@@ -1775,7 +1782,6 @@
     <Content Include="Content\page\reports\Localization\ua.xml" />
     <Content Include="Content\page\reports\Localization\zh-CHS.xml" />
     <Content Include="Content\page\reports\Localization\zh-CHT.xml" />
-    <Content Include="Error.html" />
     <Content Include="favicon.ico" />
     <Content Include="lib\log4net.dll" />
     <Content Include="lib\npoi\ICSharpCode.SharpZipLib.dll" />
@@ -1783,7 +1789,6 @@
     <Content Include="lib\npoi\NPOI.OOXML.dll" />
     <Content Include="lib\npoi\NPOI.OpenXml4Net.dll" />
     <Content Include="lib\npoi\NPOI.OpenXmlFormats.dll" />
-    <Content Include="NotFound.html" />
     <Content Include="RegUpdateHtml\InfoSure.html" />
     <Content Include="RegUpdateHtml\UpdatePass.html" />
     <Content Include="Scripts\EasyUI\changelog.txt" />
@@ -2173,7 +2178,7 @@
     <Content Include="Scripts\echarts\chart\wordCloud.js" />
     <Content Include="Scripts\echarts\echarts-all.js" />
     <Content Include="Scripts\echarts\echarts.js" />
-    <Content Include="Scripts\echarts\mycharts.js" />
+    <Content Include="Scripts\myjs\mycharts.js" />
     <Content Include="Scripts\echarts\theme\default.js" />
     <Content Include="Scripts\echarts\theme\infographic.js" />
     <Content Include="Scripts\echarts\theme\macarons.js" />
@@ -2308,6 +2313,10 @@
     <Content Include="Views\Expenses\Index.cshtml" />
     <Content Include="Views\Income\Index.cshtml" />
     <Content Include="Views\Report\ConsumptionScale.cshtml" />
+    <Content Include="Views\Report\HalfYear.cshtml" />
+    <Content Include="Views\Error\Page404.cshtml" />
+    <Content Include="Views\Error\Page500.cshtml" />
+    <None Include="Views\Logs\Logins.cshtml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

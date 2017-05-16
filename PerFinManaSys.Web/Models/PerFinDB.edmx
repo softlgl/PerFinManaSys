@@ -34,6 +34,18 @@
           <Property Name="I_Date" Type="date" Nullable="false" />
           <Property Name="I_Remark" Type="varchar" MaxLength="50" />
         </EntityType>
+        <EntityType Name="Logins">
+          <Key>
+            <PropertyRef Name="L_ID" />
+          </Key>
+          <Property Name="L_ID" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="L_UID" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="L_Role" Type="int" Nullable="false" />
+          <Property Name="L_HostName" Type="varchar" MaxLength="50" />
+          <Property Name="L_IP" Type="varchar" MaxLength="50" />
+          <Property Name="L_City" Type="varchar" MaxLength="50" />
+          <Property Name="L_LoginTime" Type="datetime" Nullable="false" />
+        </EntityType>
         <EntityType Name="Users">
           <Key>
             <PropertyRef Name="U_ID" />
@@ -41,14 +53,16 @@
           <Property Name="U_ID" Type="uniqueidentifier" Nullable="false" />
           <Property Name="U_Name" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="U_PassWord" Type="varchar" MaxLength="50" Nullable="false" />
-          <Property Name="U_Tel" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="U_Role" Type="int" Nullable="false" />
-          <Property Name="U_RegistDate" Type="datetime" />
+          <Property Name="U_LastLoginTime" Type="datetime" />
+          <Property Name="U_Tel" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="U_RegistDate" Type="datetime" Nullable="false" />
         </EntityType>
         <EntityContainer Name="MoneyWatcherDBModelStoreContainer">
           <EntitySet Name="Category" EntityType="Self.Category" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Expenses" EntityType="Self.Expenses" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Income" EntityType="Self.Income" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Logins" EntityType="Self.Logins" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
         </EntityContainer>
       </Schema></edmx:StorageModels>
@@ -83,13 +97,15 @@
           <Property Name="U_PassWord" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="U_Role" Type="Int32" Nullable="false" />
           <Property Name="U_Tel" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="U_RegistDate" Type="DateTime" Precision="3" />
+          <Property Name="U_RegistDate" Type="DateTime" Precision="3" Nullable="false" />
+          <Property Name="U_LastLoginTime" Type="DateTime" Precision="3" />
         </EntityType>
         <EntityContainer Name="MoneyWatcherDBEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Category" EntityType="Self.Category" />
           <EntitySet Name="Expenses" EntityType="Self.Expenses" />
           <EntitySet Name="Users" EntityType="Self.Users" />
           <EntitySet Name="Income" EntityType="MoneyWatcherDBModel.Income" />
+          <EntitySet Name="Logins" EntityType="MoneyWatcherDBModel.Logins" />
         </EntityContainer>
         <EntityType Name="Income">
           <Key>
@@ -100,6 +116,18 @@
           <Property Name="I_Date" Type="DateTime" Nullable="false" Precision="0" />
           <Property Name="I_Remark" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="I_UID" Type="Guid" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Logins">
+          <Key>
+            <PropertyRef Name="L_ID" />
+          </Key>
+          <Property Name="L_ID" Type="Guid" Nullable="false" />
+          <Property Name="L_UID" Type="Guid" Nullable="false" />
+          <Property Name="L_HostName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="L_IP" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="L_City" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="L_LoginTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="L_Role" Type="Int32" Nullable="false" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -131,6 +159,7 @@
           <EntitySetMapping Name="Users">
             <EntityTypeMapping TypeName="MoneyWatcherDBModel.Users">
               <MappingFragment StoreEntitySet="Users">
+                <ScalarProperty Name="U_LastLoginTime" ColumnName="U_LastLoginTime" />
                 <ScalarProperty Name="U_RegistDate" ColumnName="U_RegistDate" />
                 <ScalarProperty Name="U_Tel" ColumnName="U_Tel" />
                 <ScalarProperty Name="U_ID" ColumnName="U_ID" />
@@ -148,6 +177,19 @@
                 <ScalarProperty Name="I_Date" ColumnName="I_Date" />
                 <ScalarProperty Name="I_Amount" ColumnName="I_Amount" />
                 <ScalarProperty Name="I_ID" ColumnName="I_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Logins">
+            <EntityTypeMapping TypeName="MoneyWatcherDBModel.Logins">
+              <MappingFragment StoreEntitySet="Logins">
+                <ScalarProperty Name="L_Role" ColumnName="L_Role" />
+                <ScalarProperty Name="L_LoginTime" ColumnName="L_LoginTime" />
+                <ScalarProperty Name="L_City" ColumnName="L_City" />
+                <ScalarProperty Name="L_IP" ColumnName="L_IP" />
+                <ScalarProperty Name="L_HostName" ColumnName="L_HostName" />
+                <ScalarProperty Name="L_UID" ColumnName="L_UID" />
+                <ScalarProperty Name="L_ID" ColumnName="L_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

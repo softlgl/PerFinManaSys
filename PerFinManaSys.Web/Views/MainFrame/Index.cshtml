@@ -22,7 +22,9 @@
             $('#userpage').click(function () {
                 addTabs($(this).text(), '/UserManage/UserList');
             });//list click
-
+            $('#logins').click(function () {
+                addTabs($(this).text(), '/Logs/Logins');
+            });//list click
             $('#category').click(function () {
                 addTabs($(this).text(), '/Category/Index');
             });//category click
@@ -37,7 +39,10 @@
             //收入操作
             $('#consumptionscale').click(function () {
                 addTabs($(this).text(), '/Report/ConsumptionScale');
-            });
+            });//消费比例
+            $('#halfyear').click(function () {
+                addTabs($(this).text(), '/Report/HalfYear');
+            });//消费比例
             //退出系统操作
             $('#mm_user .loginOut').click(function () {
                 location.href = "/Login/Sigout";
@@ -117,7 +122,14 @@
                         Users user = FormsAuth.GetUserData();
                         if (user.U_Role == 0)
                         {
-                            <li><a id="userpage">用户管理</a></li>
+                             <li data-options="state:'open'">
+                                <span>管理员模块</span>
+                                <ul>
+                                    <li><a id="userpage">用户管理</a></li>
+                                    <li><a id="logins">登录日志</a></li>
+                                </ul>
+                             </li>
+                            
                         }
                     }
                     <li data-options="state:'open'">
@@ -132,26 +144,19 @@
                         <span>统计报表</span>
                         <ul>
                             <li><a id="consumptionscale" onclick="">消费比例</a></li>
+                            <li><a id="halfyear" onclick="">近一年消费</a></li>
                         </ul>
                     </li>
                 </ul>
                 </li>
             </ul>
-</div>
+    </div>
     <div data-options="region:'center'" style="width:70%;" id="layoutcenter">
         <div id="tt" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true" style="width:100%; height:100% ;overflow:hidden">
-            @if (user.U_Role == 0)
-            {
-                <div title="用户管理" style="overflow:hidden;padding:5px;" data-options="closable:true,fit:true">
-                    <iframe id="ifm" scrolling="yes" frameborder="0" src="/UserManage/UserList" style="width:100%;height:100%;padding:2px;"></iframe>
-                </div>
-            }
-            else
-            {
-                <div title="账务明细" style="overflow:hidden;padding:5px;" data-options="closable:true,fit:true">
-                    <iframe id="ifm" scrolling="yes" frameborder="0" src="/Expenses/Index" style="width:100%;height:100%;padding:2px;"></iframe>
-                </div>
-            }
+            <div title="@(user.U_Role == 0 ? "用户管理":"账务明细")" style="overflow:hidden;padding:5px;" data-options="closable:true,fit:true">
+                <iframe id="ifm" scrolling="yes" frameborder="0" src="@(user.U_Role == 0 ? "/UserManage/UserList":"/Expenses/Index")" style="width:100%;height:100%;padding:2px;">
+                </iframe>
+            </div>
         </div>
     </div>
 </body>

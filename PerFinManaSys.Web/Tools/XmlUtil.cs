@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace NewXml
+namespace PerFinManaSys.Web.Tools
 {
     /// <summary>
     /// Xml序列化与反序列化
@@ -63,23 +59,16 @@ namespace NewXml
         /// <returns></returns>
         public static string XmlSerializer(object t)
         {
-            MemoryStream Stream = new MemoryStream();
+            MemoryStream stream = new MemoryStream();
             XmlSerializer xml = new XmlSerializer(t.GetType());
-            try
-            {
-                //序列化对象
-                xml.Serialize(Stream, t);
-            }
-            catch (InvalidOperationException)
-            {
-                throw;
-            }
-            Stream.Position = 0;
-            StreamReader sr = new StreamReader(Stream);
+            //序列化对象
+            xml.Serialize(stream, t);
+            stream.Position = 0;
+            StreamReader sr = new StreamReader(stream);
             string str = sr.ReadToEnd();
 
             sr.Dispose();
-            Stream.Dispose();
+            stream.Dispose();
 
             return str;
         }

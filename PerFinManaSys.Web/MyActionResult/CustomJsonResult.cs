@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -36,33 +34,17 @@ namespace PerFinManaSys.Web.MyActionResult
 
             HttpResponseBase response = context.HttpContext.Response;
 
-            if (!string.IsNullOrEmpty(this.ContentType))
-            {
-                response.ContentType = this.ContentType;
-            }
-            else
-            {
-                response.ContentType = "application/json";
-            }
+            response.ContentType = !string.IsNullOrEmpty(ContentType) ? ContentType : "application/json";
 
-            if (this.ContentEncoding != null)
-            {
-                response.ContentEncoding = this.ContentEncoding;
-            }
-            else
-            {
-                response.ContentEncoding = Encoding.UTF8;
-            }
-            if (this.Data != null)
-            {
-                JavaScriptSerializer jss = new JavaScriptSerializer();
-                string jsonString = jss.Serialize(Data);
-                string p = @"\\/Date\((\d+)\)\\/";
-                MatchEvaluator matchEvaluator = new MatchEvaluator(this.ConvertJsonDateToDateString);
-                Regex reg = new Regex(p);
-                jsonString = reg.Replace(jsonString, matchEvaluator);
-                response.Write(jsonString);
-            }
+            response.ContentEncoding = ContentEncoding ?? Encoding.UTF8;
+            if (Data == null) return;
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            string jsonString = jss.Serialize(Data);
+            string p = @"\\/Date\((\d+)\)\\/";
+            MatchEvaluator matchEvaluator = ConvertJsonDateToDateString;
+            Regex reg = new Regex(p);
+            jsonString = reg.Replace(jsonString, matchEvaluator);
+            response.Write(jsonString);
         }
 
         /// <summary>  
@@ -72,11 +54,10 @@ namespace PerFinManaSys.Web.MyActionResult
         /// <returns>格式化后的字符串</returns>
         private string ConvertJsonDateToDateString(Match m)
         {
-            string result = string.Empty;
             DateTime dt = new DateTime(1970, 1, 1);
             dt = dt.AddMilliseconds(long.Parse(m.Groups[1].Value));
             dt = dt.ToLocalTime();
-            result = dt.ToString(FormateStr);
+            var result = dt.ToString(FormateStr);
             return result;
         }
     }
